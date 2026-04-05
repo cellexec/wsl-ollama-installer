@@ -26,14 +26,40 @@ Write-Host ""
 $existing = wsl -l -q 2>$null | Where-Object { $_.Trim() -replace "`0","" -eq $InstanceName }
 if ($existing) {
     Write-Host "Instance '$InstanceName' already exists." -ForegroundColor Yellow
-    $choice = Read-Host "Start it and re-run setup? (y/N)"
-    if ($choice -ne "y") {
-        Write-Host "Aborted." -ForegroundColor Red
-        exit 0
+    Write-Host ""
+    Write-Host "  [1] Reset — remove existing OllamaBox and start fresh (ALL DATA WILL BE LOST)" -ForegroundColor Red
+    Write-Host "  [2] Re-run setup — keep data, run the setup script again" -ForegroundColor Yellow
+    Write-Host "  [3] Cancel" -ForegroundColor White
+    Write-Host ""
+    $choice = Read-Host "Choose [1/2/3] (default: 3)"
+
+    switch ($choice) {
+        "1" {
+            Write-Host ""
+            $confirm = Read-Host "Are you sure? This deletes everything in OllamaBox including downloaded models. (type YES to confirm)"
+            if ($confirm -ne "YES") {
+                Write-Host "Aborted." -ForegroundColor Red
+                exit 0
+            }
+            Write-Host "Removing existing instance..." -ForegroundColor Yellow
+            wsl --unregister $InstanceName
+            if (Test-Path $InstallDir) {
+                Remove-Item -Recurse -Force $InstallDir
+            }
+            Write-Host "       Removed. Starting fresh install..." -ForegroundColor Green
+            Write-Host ""
+            # Fall through to the install steps below
+        }
+        "2" {
+            Write-Host "Re-running setup on existing instance..." -ForegroundColor Yellow
+            wsl -d $InstanceName -- bash -c "curl -fsSL $SetupScriptUrl | bash"
+            exit 0
+        }
+        default {
+            Write-Host "Aborted." -ForegroundColor Red
+            exit 0
+        }
     }
-    Write-Host "Launching existing instance..." -ForegroundColor Yellow
-    wsl -d $InstanceName -- bash -c "curl -fsSL $SetupScriptUrl | bash"
-    exit 0
 }
 
 # Step 1: Download Ubuntu rootfs

@@ -152,17 +152,25 @@ done
 
 echo ""
 DEFAULT_NUM=$((RECOMMENDED_IDX + 1))
-read -r -p "  Choose a model [1-${#MODELS[@]}] (default: ${DEFAULT_NUM}): " MODEL_CHOICE
-echo ""
 
-# Default to recommended
-if [ -z "$MODEL_CHOICE" ]; then
-    MODEL_CHOICE=$DEFAULT_NUM
-fi
+# Detect if running interactively (piped scripts have no terminal on stdin)
+if [ -t 0 ]; then
+    read -r -p "  Choose a model [1-${#MODELS[@]}] (default: ${DEFAULT_NUM}): " MODEL_CHOICE
+    echo ""
 
-# Validate
-if ! [[ "$MODEL_CHOICE" =~ ^[0-9]+$ ]] || [ "$MODEL_CHOICE" -lt 1 ] || [ "$MODEL_CHOICE" -gt "${#MODELS[@]}" ]; then
-    warn "Invalid choice, using recommended model."
+    # Default to recommended
+    if [ -z "$MODEL_CHOICE" ]; then
+        MODEL_CHOICE=$DEFAULT_NUM
+    fi
+
+    # Validate
+    if ! [[ "$MODEL_CHOICE" =~ ^[0-9]+$ ]] || [ "$MODEL_CHOICE" -lt 1 ] || [ "$MODEL_CHOICE" -gt "${#MODELS[@]}" ]; then
+        warn "Invalid choice, using recommended model."
+        MODEL_CHOICE=$DEFAULT_NUM
+    fi
+else
+    echo -e "  ${DIM}Non-interactive mode detected, auto-selecting recommended model.${RESET}"
+    echo ""
     MODEL_CHOICE=$DEFAULT_NUM
 fi
 
@@ -174,9 +182,13 @@ NEEDED_DISK=${SELECTED_SIZE//[^0-9.]/}
 NEEDED_DISK_INT=${NEEDED_DISK%.*}
 if [ "$FREE_DISK_GB" -lt "$((NEEDED_DISK_INT + 5))" ]; then
     warn "You may not have enough disk space (${FREE_DISK_GB} GB free, model needs ~${NEEDED_DISK_INT} GB + overhead)."
-    read -r -p "  Continue anyway? (y/N): " DISK_CONFIRM
-    if [ "$DISK_CONFIRM" != "y" ] && [ "$DISK_CONFIRM" != "Y" ]; then
-        fail "Aborted. Free up disk space and try again."
+    if [ -t 0 ]; then
+        read -r -p "  Continue anyway? (y/N): " DISK_CONFIRM
+        if [ "$DISK_CONFIRM" != "y" ] && [ "$DISK_CONFIRM" != "Y" ]; then
+            fail "Aborted. Free up disk space and try again."
+        fi
+    else
+        warn "Continuing anyway (non-interactive mode)."
     fi
 fi
 
