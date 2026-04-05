@@ -82,7 +82,13 @@ The installer offers these models based on your RAM:
 
 ### GPU vs CPU
 
-By default Ollama runs on your CPU. You can check what's being used:
+**Check your GPU:**
+
+```powershell
+Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion, AdapterRAM
+```
+
+**Check what Ollama is using:**
 
 ```powershell
 wsl -d OllamaBox -- bash -c "ollama ps"
@@ -95,23 +101,26 @@ NAME                   ID              SIZE      PROCESSOR    CONTEXT    UNTIL
 mistral-nemo:latest    e7e06d107c6c    7.4 GB    100% CPU     4096       3 minutes from now
 ```
 
-If it says `100% CPU`, you can speed things up significantly with an NVIDIA GPU.
+**GPU acceleration currently only works with NVIDIA GPUs** (CUDA). If you have an Intel or AMD/Radeon GPU, Ollama will run on CPU only — it still works fine, just slower.
 
-**Enable GPU acceleration (one command):**
+If you have an **NVIDIA GPU** (GTX 1060 or newer):
 
-```powershell
-powershell -Command "Start-Process -Verb RunAs powershell '-Command iwr -useb https://raw.githubusercontent.com/cellexec/wsl-ollama-installer/main/enable-gpu.ps1 | iex'"
-```
+1. Install the latest driver from [nvidia.com/drivers](https://www.nvidia.com/Download/index.aspx) on Windows
+2. Restart all WSL instances:
+   ```powershell
+   wsl --shutdown
+   ```
+3. Start OllamaBox again:
+   ```powershell
+   wsl -d OllamaBox -- bash -c "~/start-ollama.sh"
+   ```
+4. Verify with `ollama ps` — it should now show `100% GPU`
 
-This installs the [NVIDIA CUDA drivers for WSL](https://developer.nvidia.com/cuda/wsl) and restarts OllamaBox. After that, `ollama ps` should show `100% GPU` instead.
-
-**Requirements for GPU:**
-- An NVIDIA GPU (GTX 1060 or newer recommended)
-- Latest [NVIDIA driver](https://www.nvidia.com/Download/index.aspx) installed on Windows
+No extra setup is needed inside WSL. Ollama bundles its own CUDA libraries and auto-detects the GPU.
 
 ### System Requirements
 
 - Windows 10 (version 2004+) or Windows 11
 - 8 GB RAM recommended (4 GB minimum)
 - 15 GB free disk space
-- NVIDIA GPU optional but speeds things up significantly
+- NVIDIA GPU optional (speeds things up, but CPU works fine)

@@ -101,8 +101,10 @@ echo -e "       CPU cores:  ${BOLD}${CPU_CORES}${RESET}"
 echo -e "       Free disk:  ${BOLD}${FREE_DISK_GB} GB${RESET}"
 if [ "$HAS_GPU" = "yes" ]; then
     echo -e "       GPU:        ${BOLD}${GPU_NAME} (${GPU_VRAM} MB VRAM)${RESET}"
+    echo -e "       ${GREEN}NVIDIA GPU detected — Ollama will use GPU acceleration.${RESET}"
 else
-    echo -e "       GPU:        ${DIM}Not detected (CPU-only mode)${RESET}"
+    echo -e "       GPU:        ${DIM}Not detected (CPU-only mode — still works, just slower)${RESET}"
+    echo -e "       ${DIM}GPU acceleration requires an NVIDIA GPU with drivers installed on Windows.${RESET}"
 fi
 echo ""
 
