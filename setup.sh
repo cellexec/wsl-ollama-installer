@@ -206,9 +206,10 @@ echo -e "       ${DIM}Model ready.${RESET}"
 # --------------------------------------------------
 step "5/6" "Installing Open WebUI..."
 
-# Create venv for Open WebUI
+# Create venv and data directory for Open WebUI
 VENV_DIR="/opt/ollamabox/venv"
-mkdir -p /opt/ollamabox
+DATA_DIR="/opt/ollamabox/data"
+mkdir -p /opt/ollamabox "$DATA_DIR"
 
 if [ -d "$VENV_DIR" ]; then
     echo -e "       ${DIM}Virtual environment exists, reusing.${RESET}"
@@ -251,6 +252,9 @@ fi
 
 # Start Open WebUI
 source /opt/ollamabox/venv/bin/activate
+export DATA_DIR="/opt/ollamabox/data"
+export HOME="/root"
+cd /opt/ollamabox
 
 echo -e "  Open WebUI: ${GREEN}starting...${RESET}"
 echo ""
@@ -295,4 +299,7 @@ echo ""
 
 # Launch Open WebUI (blocking — keeps the terminal open)
 source "$VENV_DIR/bin/activate"
+export DATA_DIR="/opt/ollamabox/data"
+export HOME="/root"
+cd /opt/ollamabox
 open-webui serve --port 8080
