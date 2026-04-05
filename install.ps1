@@ -14,7 +14,7 @@ $RootfsUrl = "https://cloud-images.ubuntu.com/wsl/noble/current/ubuntu-noble-wsl
 $RootfsFile = "$env:TEMP\ubuntu-24.04-rootfs.tar.gz"
 
 # --- GITHUB RAW URL (update after pushing to your repo) ---
-$SetupScriptUrl = "https://raw.githubusercontent.com/YOURUSER/wsl-ollama-installer/main/setup.sh"
+$SetupScriptUrl = "https://raw.githubusercontent.com/cellexec/wsl-ollama-installer/main/setup.sh"
 
 Write-Host ""
 Write-Host "=========================================" -ForegroundColor Cyan
