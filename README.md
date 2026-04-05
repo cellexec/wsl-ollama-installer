@@ -80,6 +80,35 @@ The installer offers these models based on your RAM:
 | [Qwen 2.5](https://ollama.com/library/qwen2.5) | 14B | 16 GB+ | Great for detailed analysis |
 | [Llama 3.1 70B](https://ollama.com/library/llama3.1) | 70B | 48 GB+ | Near-commercial quality, needs serious hardware |
 
+### GPU vs CPU
+
+By default Ollama runs on your CPU. You can check what's being used:
+
+```powershell
+wsl -d OllamaBox -- bash -c "ollama ps"
+```
+
+Example output:
+
+```
+NAME                   ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+mistral-nemo:latest    e7e06d107c6c    7.4 GB    100% CPU     4096       3 minutes from now
+```
+
+If it says `100% CPU`, you can speed things up significantly with an NVIDIA GPU.
+
+**Enable GPU acceleration (one command):**
+
+```powershell
+powershell -Command "Start-Process -Verb RunAs powershell '-Command iwr -useb https://raw.githubusercontent.com/cellexec/wsl-ollama-installer/main/enable-gpu.ps1 | iex'"
+```
+
+This installs the [NVIDIA CUDA drivers for WSL](https://developer.nvidia.com/cuda/wsl) and restarts OllamaBox. After that, `ollama ps` should show `100% GPU` instead.
+
+**Requirements for GPU:**
+- An NVIDIA GPU (GTX 1060 or newer recommended)
+- Latest [NVIDIA driver](https://www.nvidia.com/Download/index.aspx) installed on Windows
+
 ### System Requirements
 
 - Windows 10 (version 2004+) or Windows 11
