@@ -205,8 +205,8 @@ echo -e "       ${DIM}Model ready.${RESET}"
 # Step 5: Install Open WebUI
 # --------------------------------------------------
 step "5/6" "Installing Open WebUI..."
-echo -e "       ${DIM}This step installs a lot of packages and can take 5-10 minutes.${RESET}"
-echo -e "       ${DIM}Grab a coffee, it will be worth the wait.${RESET}"
+echo -e "       ${DIM}This downloads a lot of packages and typically takes 5-10 minutes.${RESET}"
+echo -e "       ${DIM}Grab a coffee — the spinner below shows it's still working.${RESET}"
 echo ""
 
 # Create venv and data directory for Open WebUI
@@ -224,20 +224,41 @@ source "$VENV_DIR/bin/activate"
 
 pip install --upgrade pip -q
 
-# Show pip progress so the user knows it's not stuck
-pip install open-webui 2>&1 | while IFS= read -r line; do
-    # Show download/install lines, skip everything else
-    if [[ "$line" == *"Downloading"* ]]; then
-        pkg=$(echo "$line" | grep -oP '[^ /]+\.whl|[^ /]+\.tar\.gz' | head -1)
-        echo -ne "\r       ${DIM}Downloading: ${pkg:-...}${RESET}\033[K"
-    elif [[ "$line" == *"Installing collected"* ]]; then
-        echo -ne "\r       ${DIM}${line}${RESET}\033[K"
-    elif [[ "$line" == *"Successfully installed"* ]]; then
-        echo ""
-    fi
+# Run pip in background, show a spinner with elapsed time
+PIP_LOG="/tmp/ollamabox-pip.log"
+pip install open-webui > "$PIP_LOG" 2>&1 &
+PIP_PID=$!
+
+SPINNER_CHARS='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+START_TIME=$SECONDS
+i=0
+
+while kill -0 "$PIP_PID" 2>/dev/null; do
+    ELAPSED=$(( SECONDS - START_TIME ))
+    MINS=$(( ELAPSED / 60 ))
+    SECS=$(( ELAPSED % 60 ))
+    CHAR="${SPINNER_CHARS:i%${#SPINNER_CHARS}:1}"
+    echo -ne "\r       ${CYAN}${CHAR}${RESET} ${DIM}Installing... ${MINS}m ${SECS}s elapsed${RESET}\033[K"
+    sleep 0.2
+    i=$((i + 1))
 done
 
-echo -e "       ${DIM}Done.${RESET}"
+# Check if pip succeeded
+wait "$PIP_PID"
+PIP_EXIT=$?
+
+ELAPSED=$(( SECONDS - START_TIME ))
+MINS=$(( ELAPSED / 60 ))
+SECS=$(( ELAPSED % 60 ))
+
+if [ "$PIP_EXIT" -ne 0 ]; then
+    echo -e "\r       ${RED}Installation failed after ${MINS}m ${SECS}s. See log: ${PIP_LOG}${RESET}\033[K"
+    echo ""
+    tail -20 "$PIP_LOG"
+    fail "pip install open-webui failed."
+fi
+
+echo -e "\r       ${GREEN}Installed in ${MINS}m ${SECS}s.${RESET}\033[K"
 
 # --------------------------------------------------
 # Create a reusable start script
