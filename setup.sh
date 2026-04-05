@@ -205,6 +205,9 @@ echo -e "       ${DIM}Model ready.${RESET}"
 # Step 5: Install Open WebUI
 # --------------------------------------------------
 step "5/6" "Installing Open WebUI..."
+echo -e "       ${DIM}This step installs a lot of packages and can take 5-10 minutes.${RESET}"
+echo -e "       ${DIM}Grab a coffee, it will be worth the wait.${RESET}"
+echo ""
 
 # Create venv and data directory for Open WebUI
 VENV_DIR="/opt/ollamabox/venv"
@@ -220,7 +223,19 @@ fi
 source "$VENV_DIR/bin/activate"
 
 pip install --upgrade pip -q
-pip install open-webui -q
+
+# Show pip progress so the user knows it's not stuck
+pip install open-webui 2>&1 | while IFS= read -r line; do
+    # Show download/install lines, skip everything else
+    if [[ "$line" == *"Downloading"* ]]; then
+        pkg=$(echo "$line" | grep -oP '[^ /]+\.whl|[^ /]+\.tar\.gz' | head -1)
+        echo -ne "\r       ${DIM}Downloading: ${pkg:-...}${RESET}\033[K"
+    elif [[ "$line" == *"Installing collected"* ]]; then
+        echo -ne "\r       ${DIM}${line}${RESET}\033[K"
+    elif [[ "$line" == *"Successfully installed"* ]]; then
+        echo ""
+    fi
+done
 
 echo -e "       ${DIM}Done.${RESET}"
 
