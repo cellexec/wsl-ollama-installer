@@ -10,8 +10,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$RootfsUrl = "https://cloud-images.ubuntu.com/wsl/noble/current/ubuntu-noble-wsl-amd64-24.04lts.rootfs.tar.gz"
-$RootfsFile = "$env:TEMP\ubuntu-24.04-rootfs.tar.gz"
+$RootfsUrl = "https://cdimages.ubuntu.com/ubuntu-wsl/noble/daily-live/current/noble-wsl-amd64.wsl"
+$RootfsFile = "$env:TEMP\ubuntu-24.04-rootfs.wsl"
 
 # --- GITHUB RAW URL (update after pushing to your repo) ---
 $SetupScriptUrl = "https://raw.githubusercontent.com/cellexec/wsl-ollama-installer/main/setup.sh"
